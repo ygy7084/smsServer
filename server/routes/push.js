@@ -176,7 +176,7 @@ router.post('/', (req, res) => {
             }
           );
           console.log(error);
-          return nexmo.message.sendSms(from, to,'unicode',result.message, () => {
+          return nexmo.message.sendSms(from, to,result.message, () => {
             PushModel.findOneAndUpdate(
               {_id: result.id},
               {$set: {"pushStatus": 2,"smsPushStatus":2}},
@@ -190,7 +190,7 @@ router.post('/', (req, res) => {
           });
         });
     } else {
-      return nexmo.message.sendSms(from, to,'unicode',result.message, () => {
+      return nexmo.message.sendSms(from, to,result.message, () => {
         PushModel.findOneAndUpdate(
           {_id: result.id},
           {$set: {"pushStatus": 2,"smsPushStatus":2}},
