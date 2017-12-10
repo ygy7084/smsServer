@@ -1,3 +1,5 @@
 {
-  "MONGO_URL" : "mongodb://localhost:27017/ours"
+  "MONGO_URL" : "mongodb://localhost:27017/ours",
+  "apiKey" : "54f4e745",
+  "apiSecret": "911f9d784cc679a2"
 }

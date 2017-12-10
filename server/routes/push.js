@@ -1,6 +1,7 @@
 import express from 'express';
 import web_push from 'web-push';
 import Nexmo from 'nexmo';
+import configure from '../configure';
 import {
   PushModel,
 } from '../models'
@@ -9,11 +10,10 @@ const router = express.Router();
 
 web_push.setGCMAPIKey('AIzaSyAFs9QXNkl6GYUK88GNHVDPYd0-idtPm9E');
 const nexmo = new Nexmo({
-  apiKey: '54f4e745',
-  apiSecret: '911f9d784cc679a2',
+  apiKey: configure.apiKey,
+  apiSecret: configure.apiSecret,
   type: 'unicode',
 });
-
 const pushsample = {
   endPoint : "https://android.googleapis.com/gcm/send/eDPnMwhewm8:APA91bHILdPTOFC-9V-5LhdiF71wd2BzVulvDgr2bGm3DxdI9fu6SOzYbQZAsmCbcLmdIw7XT4Pg5Brjzr3cauxx9TAfN1Sr4iBck853AcQEtpgXFQhrGcg74aTJWYI3g00ipRIMc-i6",
   pushStatus : 0,
@@ -24,7 +24,6 @@ const pushsample = {
   phone: '01030261963',
   message: "check체크",
 };
-
 router.get('/testGet', (req, res) => {
 
   const keys = pushsample.keys;
@@ -176,7 +175,8 @@ router.post('/', (req, res) => {
             }
           );
           console.log(error);
-          return nexmo.message.sendSms(from, to,result.message,{type: 'unicode'}, () => {
+          return nexmo.message.sendSms(from, to,result.message,{type: 'unicode'}, (err, info) => {
+            console.log(info);
             PushModel.findOneAndUpdate(
               {_id: result.id},
               {$set: {"pushStatus": 2,"smsPushStatus":2}},
@@ -190,7 +190,8 @@ router.post('/', (req, res) => {
           });
         });
     } else {
-      return nexmo.message.sendSms(from, to,result.message,{type:'unicode'}, () => {
+      return nexmo.message.sendSms(from, to,result.message,{type:'unicode'}, (err, info) => {
+        console.log(info);
         PushModel.findOneAndUpdate(
           {_id: result.id},
           {$set: {"pushStatus": 2,"smsPushStatus":2}},

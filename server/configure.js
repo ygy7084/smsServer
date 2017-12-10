@@ -8,6 +8,8 @@ const config = JSON.parse(fs.readFileSync(file_location, 'utf8'));
 // 환경설정 구조
 const config_key = [
   'MONGO_URL',
+  'apiKey',
+  'apiSecret',
   'PORT',
   'SECRET',
   'SHOP_URL',
@@ -16,6 +18,8 @@ const config_key = [
 // 환경설정 입력할 객체
 const configuration = {
   MONGO_URL: '',
+  apiKey: '',
+  apiSecret: '',
   PORT: '',
   SHOP_URL: '',
 };
