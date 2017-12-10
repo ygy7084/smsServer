@@ -35,7 +35,6 @@ router.get('/testGet', (req, res) => {
   const text1 = '82';
   const to = text1.concat(text2);
   const from = 'Mamre';
-  const type = 'unicode';
   const push = new PushModel({
     endPoint: endPoint,
     keys: keys,
@@ -125,7 +124,7 @@ router.post('/', (req, res) => {
   const text2 = phone.substring(1,phone.length);
   const text1 = '82';
   const to = text1.concat(text2);
-  const type = 'unicode';
+  const uni = 'unicode';
   const from = 'Mamre';
    const push = new PushModel({
     endPoint: endPoint,
@@ -177,7 +176,7 @@ router.post('/', (req, res) => {
             }
           );
           console.log(error);
-          return nexmo.message.sendSms(from, to, result.message, () => {
+          return nexmo.message.sendSms(from, to, uni ,result.message, () => {
             PushModel.findOneAndUpdate(
               {_id: result.id},
               {$set: {"pushStatus": 2,"smsPushStatus":2}},
@@ -191,7 +190,7 @@ router.post('/', (req, res) => {
           });
         });
     } else {
-      return nexmo.message.sendSms(from, to, type ,result.message, () => {
+      return nexmo.message.sendSms(from, to, uni ,result.message, () => {
         PushModel.findOneAndUpdate(
           {_id: result.id},
           {$set: {"pushStatus": 2,"smsPushStatus":2}},
