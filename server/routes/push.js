@@ -72,18 +72,6 @@ router.post('/', (req, res) => {
                   }
                   return resolve()
                 });
-              })
-              .catch(() => {
-                WebPush.findOneAndUpdate({
-                  _id: webPushId
-                }, {
-                  status: 3, // 전송 중 없이 바로 전송 완료 (향후 보완)
-                }, (err) => {
-                  if (err) {
-                    return res.status(500).json({message: '웹 푸시 DB 수정 실패'});
-                  }
-                  return reject()
-                });
               });
           })
         })
