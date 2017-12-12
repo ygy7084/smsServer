@@ -1,223 +1,168 @@
 import express from 'express';
-import web_push from 'web-push';
-import Nexmo from 'nexmo';
-import configure from '../configure';
 import {
-  PushModel,
+  Push, Sms, WebPush,
 } from '../models'
+import {
+  sendSms,
+  sendWebPush,
+} from '../modules';
 
 const router = express.Router();
 
-web_push.setGCMAPIKey('AIzaSyAFs9QXNkl6GYUK88GNHVDPYd0-idtPm9E');
-const nexmo = new Nexmo({
-  apiKey: configure.apiKey,
-  apiSecret: configure.apiSecret,
-  type: 'unicode',
-});
-const pushsample = {
-  endPoint : "https://android.googleapis.com/gcm/send/eDPnMwhewm8:APA91bHILdPTOFC-9V-5LhdiF71wd2BzVulvDgr2bGm3DxdI9fu6SOzYbQZAsmCbcLmdIw7XT4Pg5Brjzr3cauxx9TAfN1Sr4iBck853AcQEtpgXFQhrGcg74aTJWYI3g00ipRIMc-i6",
-  pushStatus : 0,
-  keys: {
-    key: "BM1ck0hsdRoWAtqqfboekMKPSueLw1P/bSrfmdswjVohJmn6pa2T5c3B5bP5iqzMkAGgvicsFI1Jmhh6NQqwOVs=",
-    authSecret: "GO8Xpz4UP7StzOHk6s/1Ew=="
-  },
-  phone: '01030261963',
-  message: "check체크",
-};
-router.get('/testGet', (req, res) => {
-
-  const keys = pushsample.keys;
-  const endPoint = pushsample.endPoint;
-  const message = pushsample.message;
-  const pushStatus = pushsample.pushStatus;
-  const phone = pushsample.phone;
-  const text2 = phone.substring(1,phone.length);
-  const text1 = '82';
-  const to = text1.concat(text2);
-  const from = 'Mamre';
-  const push = new PushModel({
-    endPoint: endPoint,
-    keys: keys,
-    message: message,
-    pushStatus: pushStatus,
-    webPushStatus: 0,
-    sendTime: new Date(),
-  });
-  push.save((err, result) => {
-    if (err) {
-      return res.status(500).json({
-        message: '에러',
-        error: err,
-      });
-    }
-    console.log(result.keys);
-    if (keys!== undefined){
-      return web_push.sendNotification({
-        endpoint: endPoint,
-        TTL: 0,
-        keys: {
-          auth: keys.authSecret,
-          p256dh: keys.key,
-        },
-      }, JSON.stringify({
-        message: message,
-        id: result._id,
-      }))
-        .then(() => {
-          PushModel.findOneAndUpdate(
-            {_id: result.id},
-            { $set: {"webPushStatus": 2, "pushStatus": 2}},
-            (err) => {
-              if(err) {
-                return res.status(500).json({message: 'push 수정오류'});
-              }
-            }
-          );
-          return res.json({ data: true });
-        })
-        .catch((error) => {
-          PushModel.findOneAndUpdate(
-            {_id: result.id},
-            { $set: {"webPushStatus" : 3}},
-            (err) => {
-              if(err) {
-                return res.status(500).json({message: 'push 수정오류'});
-              }
-            }
-          );
-          console.log(error);
-          return nexmo.message.sendSms(from, to, result.message, () => {
-            PushModel.findOneAndUpdate(
-              {_id: result.id},
-              {$set: {"pushStatus": 2,"smsPushStatus":2}},
-              (err) => {
-                if(err) {
-                  return res.status(500).json({message: 'PushModel 수정오류'});
-                }
-              }
-            );
-            return res.json({data:'success'});
-          });
-        });
-    } else {
-      return nexmo.message.sendSms(from, to, result.message, () => {
-        PushModel.findOneAndUpdate(
-          {_id: result.id},
-          {$set: {"pushStatus": 2,"smsPushStatus":2}},
-          (err) => {
-            if(err) {
-              return res.status(500).json({message: 'PushModel 수정오류'});
-            }
-          }
-        );
-        return res.json({data:'success'});
-      })
-    }
-  });
-});
+// router.post('/onlyweb', (req, res) => {
+//
+// });
 router.post('/', (req, res) => {
-  const endPoint = req.body.data.endPoint;
-  const keys = req.body.data.keys;
-  const message = req.body.data.message;
-  const pushStatus = req.body.data.pushStatus;
-  const phone = req.body.data.phone;
-  const text2 = phone.substring(1,phone.length);
-  const text1 = '82';
-  const to = text1.concat(text2);
-  const from = 'Mamre';
-   const push = new PushModel({
-    endPoint: endPoint,
-    keys: keys,
-    message: message,
-    pushStatus: pushStatus,
-    webPushStatus: 0,
-    sendTime: new Date(),
+  console.log(req.body.data);
+  const {webPush, sms} = req.body.data;
+  if (!webPush && !sms) {
+    return res.status(500).json({message: '푸시 서버로의 입력이 잘못되었습니다.'});
+  }
+  const push = new Push({
+    datetime: new Date(),
+    status: 1, // 상위 push는 시작과 동시에 전송 중
   });
   push.save((err, result) => {
     if (err) {
       return res.status(500).json({
-        message: '에러',
-        error: err,
+        message: 'push db 저장에 문제가 있습니다.',
+        err,
       });
     }
-    if (keys!== undefined){
-      return web_push.sendNotification({
-        endpoint: endPoint,
-        TTL: 0,
-        keys: {
-          auth: keys.authSecret,
-          p256dh: keys.key,
-        },
-      }, JSON.stringify({
-        message: message,
-        id: result._id,
-      }))
-        .then(() => {
-          PushModel.findOneAndUpdate(
-            {_id: result.id},
-            { $set: {"webPushStatus": 2, "pushStatus": 2}},
-            (err) => {
-              if(err) {
-                return res.status(500).json({message: 'push 수정오류'});
-              }
-            }
-          );
-          return res.json({ data: true });
-        })
-        .catch((error) => {
-          PushModel.findOneAndUpdate(
-            {_id: result.id},
-            { $set: {"webPushStatus" : 3}},
-            (err) => {
-              if(err) {
-                return res.status(500).json({message: 'push 수정오류'});
-              }
-            }
-          );
-          console.log(error);
-          return nexmo.message.sendSms(from, to,result.message,{type: 'unicode'}, (err, info) => {
-            console.log(info);
-            PushModel.findOneAndUpdate(
-              {_id: result.id},
-              {$set: {"pushStatus": 2,"smsPushStatus":2}},
-              (err) => {
-                if(err) {
-                  return res.status(500).json({message: 'PushModel 수정오류'});
-                }
-              }
-            );
-            return res.json({data:'success'});
-          });
-        });
-    } else {
-      return nexmo.message.sendSms(from, to,result.message,{type:'unicode'}, (err, info) => {
-        console.log(info);
-        PushModel.findOneAndUpdate(
-          {_id: result.id},
-          {$set: {"pushStatus": 2,"smsPushStatus":2}},
-          (err) => {
-            if(err) {
-              return res.status(500).json({message: 'PushModel 수정오류'});
-            }
-          }
-        );
-        return res.json({data:'success'});
-      })
-    }
-  });
-});
-
-router.get('/:_id', (req, res) => {
-  PushModel.findOneAndUpdate(
-    {_id: req.params._id},
-    { $set: {"pushStatus" : 2}},
-    (err) => {
-      if(err) {
-        return res.status(500).json({message: 'push 수정오류'});
+    const pushId = result._id;
+    new Promise((resolve, reject) => {
+      if (!webPush || !webPush.endpoint || webPush.keys) {
+        reject();
       }
-    }
-  );
-  return res.json({ data: true });
+      new WebPush({
+        endpoint: webPush.endpoint,
+        keys: webPush.keys,
+        message: webPush.message,
+        sentDatetime: new Date(),
+      })
+        .save((err, result) => {
+          if (err) {
+            reject();
+          }
+          const webPushId = result._id;
+          Push.findOneAndUpdate({
+            _id: pushId,
+          }, {
+            webPush: webPushId,
+          }, (err) => {
+            if (err) {
+              return res.status(500).json({message: '푸시 DB 수정 실패'});
+            }
+            sendWebPush({
+              endpoint: webPush.endpoint,
+              authSecret: webPush.keys.authSecret,
+              key: webPush.keys.key,
+              message: webPush.message,
+              _id: webPushId,
+              sentDatetime: new Date(),
+            })
+              .then(() => {
+                WebPush.findOneAndUpdate({
+                  _id: webPushId
+                }, {
+                  status: 2, // 전송 중 없이 바로 전송 완료 (향후 보완)
+                }, (err) => {
+                  if (err) {
+                    return res.status(500).json({message: '웹 푸시 DB 수정 실패'});
+                  }
+                  return resolve()
+                });
+              })
+              .catch(() => {
+                WebPush.findOneAndUpdate({
+                  _id: webPushId
+                }, {
+                  status: 3, // 전송 중 없이 바로 전송 완료 (향후 보완)
+                }, (err) => {
+                  if (err) {
+                    return res.status(500).json({message: '웹 푸시 DB 수정 실패'});
+                  }
+                  return reject()
+                });
+              });
+          })
+        })
+    })
+      .then(() => {
+        Push.findOneAndUpdate({
+          _id: pushId,
+        }, {
+          status: 2,
+        }, (err) => {
+          if (err) {
+            return res.status(500).json({message: '푸시 DB 수정 실패'});
+          }
+          return res.json({data: true});
+        })
+      })
+        .catch(() => {
+          if (!sms || !sms.phone || !sms.message) {
+            return res.status(500).json({message: '푸시 알림 실패 - SMS 정보가 없습니다.'});
+          }
+          new Sms({
+            phone: sms.phone,
+            message: sms.message,
+            sentDatetime: new Date(),
+          })
+            .save((err, result) => {
+              if (err) {
+                return res.status(500).json({message: 'SMS DB 저장 실패'});
+              }
+              const smsId = result._id;
+              Push.findOneAndUpdate({
+                _id: pushId,
+              }, {
+                sms: smsId,
+              }, (err) => {
+                if (err) {
+                  return res.status(500).json({message: '푸시 DB 수정 실패'});
+                }
+                sendSms({
+                  from: 'Mamre',
+                  to: sms.phone,
+                  message: sms.message,
+                })
+                  .then(() => {
+                    Sms.findOneAndUpdate({
+                      _id: smsId
+                    }, {
+                      status: 2, // 전송 중 없이 바로 전송 완료 (향후 보완)
+                    }, (err) => {
+                      if (err) {
+                        return res.status(500).json({message: 'SMS DB 수정 실패'});
+                      }
+                      Push.findOneAndUpdate({
+                        _id: pushId,
+                      }, {
+                        status: 2,
+                      }, (err) => {
+                        if (err) {
+                          return res.status(500).json({message: '푸시 DB 수정 실패'});
+                        }
+                        return res.json({data: true});
+                      });
+                    })
+                      .catch(() => {
+                        Sms.findOneAndUpdate({
+                          _id: smsId
+                        }, {
+                          status: 3, // 실패
+                        }, (err) => {
+                          if (err) {
+                            return res.status(500).json({message: 'SMS DB 수정 실패'});
+                          }
+                          return res.state(500).json({message: '푸시 실패'});
+                        });
+                      });
+                  })
+              })
+            });
+        });
+      });
 });
-
 export default router;

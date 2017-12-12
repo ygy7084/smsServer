@@ -1,10 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import webPush from 'web-push';
-import path from 'path';
 import mongoose from 'mongoose';
 import http from 'http';
-import fs from 'fs';
 import configure from './configure';
 // 서버사이드 ajax를 위한 fetch
 import 'isomorphic-fetch';
@@ -44,6 +41,3 @@ const httpApp = http.Server(app);
 httpApp.listen(port, () => {
   console.log(`Server is listening on this port : ${port}`);
 });
-export default httpApp;
-
-

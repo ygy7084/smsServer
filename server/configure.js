@@ -1,3 +1,5 @@
+/* global process */
+
 import fs from 'fs';
 import path from 'path';
 
@@ -8,18 +10,17 @@ const config = JSON.parse(fs.readFileSync(file_location, 'utf8'));
 // 환경설정 구조
 const config_key = [
   'MONGO_URL',
-  'apiKey',
-  'apiSecret',
-  'PORT',
-  'SECRET',
-  'SHOP_URL',
+  'WEB_PUSH_GCMAPI_KEY',
+  'SMS_API_KEY',
+  'SMS_API_SECRET',
 ];
 
 // 환경설정 입력할 객체
 const configuration = {
   MONGO_URL: '',
-  apiKey: '',
-  apiSecret: '',
+  WEB_PUSH_GCMAPI_KEY: '',
+  SMS_API_KEY: '',
+  SMS_API_SECRET: '',
   PORT: '',
   SHOP_URL: '',
 };

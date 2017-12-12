@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
-const SmsPush = new Schema({
+const Sms = new Schema({
   phone: String,
   message: String,
-  pushStatus: Number,
   sentDatetime: Date,
+  status: { type: Number, default: 0 },
 });
-const model = mongoose.model('smsPush', SmsPush);
+const model = mongoose.model('sms', Sms);
 export default model;

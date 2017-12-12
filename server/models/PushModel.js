@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 const pushModel = new Schema({
   phone: String,
-  endPoint: String,
+  endpoint: String,
   keys: {
     key: String,
     authSecret: String,
