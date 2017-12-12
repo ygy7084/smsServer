@@ -33,6 +33,9 @@ router.post('/', (req, res) => {
     new Promise((resolve, reject) => {
       if (!webPush || !webPush.endpoint || webPush.keys) {
         console.log('rejectsms');
+        console.log(webPush);
+        console.log(webPush.endpoint);
+        console.log(webPush.keys);
         reject('sms');
       }
       return new WebPush({
