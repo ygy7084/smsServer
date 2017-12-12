@@ -34,7 +34,7 @@ router.post('/', (req, res) => {
       if (!webPush || !webPush.endpoint || webPush.keys) {
         reject();
       }
-      new WebPush({
+      return new WebPush({
         endpoint: webPush.endpoint,
         keys: webPush.keys,
         message: webPush.message,
@@ -45,7 +45,7 @@ router.post('/', (req, res) => {
             reject();
           }
           const webPushId = result._id;
-          Push.findOneAndUpdate({
+          return Push.findOneAndUpdate({
             _id: pushId,
           }, {
             webPush: webPushId,
@@ -53,7 +53,7 @@ router.post('/', (req, res) => {
             if (err) {
               return res.status(500).json({message: '푸시 DB 수정 실패'});
             }
-            sendWebPush({
+            return sendWebPush({
               endpoint: webPush.endpoint,
               authSecret: webPush.keys.authSecret,
               key: webPush.keys.key,
@@ -62,7 +62,7 @@ router.post('/', (req, res) => {
               sentDatetime: new Date(),
             })
               .then(() => {
-                WebPush.findOneAndUpdate({
+                return WebPush.findOneAndUpdate({
                   _id: webPushId
                 }, {
                   status: 2, // 전송 중 없이 바로 전송 완료 (향후 보완)
@@ -77,7 +77,7 @@ router.post('/', (req, res) => {
         })
     })
       .then(() => {
-        Push.findOneAndUpdate({
+        return Push.findOneAndUpdate({
           _id: pushId,
         }, {
           status: 2,
@@ -88,7 +88,8 @@ router.post('/', (req, res) => {
           return res.json({data: true});
         })
       })
-        .catch(() => {
+        .catch((e) => {
+          console.error(e);
           if (!sms || !sms.phone || !sms.message) {
             return res.status(500).json({message: '푸시 알림 실패 - SMS 정보가 없습니다.'});
           }
