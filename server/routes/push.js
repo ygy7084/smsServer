@@ -32,7 +32,7 @@ router.post('/', (req, res) => {
     const pushId = result._id;
     new Promise((resolve, reject) => {
       if (!webPush || !webPush.endpoint || webPush.keys) {
-        reject();
+        reject('sms');
       }
       return new WebPush({
         endpoint: webPush.endpoint,
@@ -89,7 +89,9 @@ router.post('/', (req, res) => {
         })
       })
         .catch((e) => {
-          console.error(e);
+          if (e !== 'sms') {
+            return console.error(e);
+          }
           if (!sms || !sms.phone || !sms.message) {
             return res.status(500).json({message: '푸시 알림 실패 - SMS 정보가 없습니다.'});
           }
