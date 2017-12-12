@@ -32,10 +32,6 @@ router.post('/', (req, res) => {
     const pushId = result._id;
     new Promise((resolve, reject) => {
       if (!webPush) {
-        console.log('rejectsms');
-        console.log(webPush);
-        console.log(webPush.endpoint);
-        console.log(webPush.keys);
         return reject('sms');
       }
       return new WebPush({
