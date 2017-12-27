@@ -2,5 +2,6 @@
   "MONGO_URL" : "mongodb://localhost:27017/ours",
   "WEB_PUSH_GCMAPI_KEY": "AIzaSyAFs9QXNkl6GYUK88GNHVDPYd0-idtPm9E",
   "SMS_API_KEY" : "15d84ce8",
-  "SMS_API_SECRET": "8bf4f92533630be6"
+  "SMS_API_SECRET": "8bf4f92533630be6",
+  "SMS_SENDER": "827045155900"
 }

@@ -13,6 +13,7 @@ const config_key = [
   'WEB_PUSH_GCMAPI_KEY',
   'SMS_API_KEY',
   'SMS_API_SECRET',
+  'SMS_SENDER',
 ];
 
 // 환경설정 입력할 객체
@@ -23,6 +24,7 @@ const configuration = {
   SMS_API_SECRET: '',
   PORT: '',
   SHOP_URL: '',
+  SMS_SENDER: '',
 };
 
 // 위의 객체에 환경설정 입력

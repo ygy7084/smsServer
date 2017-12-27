@@ -3,7 +3,7 @@ import configure from '../configure';
 
 webPush.setGCMAPIKey(configure.WEB_PUSH_GCMAPI_KEY);
 
-export default function sendWebPush ({ endpoint, authSecret, key, message, _id }) {
+export default function sendWebPush({ endpoint, authSecret, key, message, _id }) {
   return new Promise((resolve, reject) => {
     if (
       !endpoint ||
@@ -27,6 +27,6 @@ export default function sendWebPush ({ endpoint, authSecret, key, message, _id }
       _id,
     }))
       .then(() => resolve())
-      .catch((e) => reject(e));
+      .catch(e => reject(e));
   });
 }

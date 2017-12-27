@@ -2,7 +2,7 @@ import express from 'express';
 import Nexmo from 'nexmo';
 import {
   SmsPush,
-} from '../models'
+} from '../models';
 
 const router = express.Router();
 
@@ -21,14 +21,14 @@ const SmsSample = {
 router.get('/testGet', (req, res) => {
   const phone = SmsSample.phone;
   const message = SmsSample.message;
-  const pushStatus= SmsSample.pushStatus;
+  const pushStatus = SmsSample.pushStatus;
   const sendTime = SmsSample.sendTime;
 
   const push = new SmsPush({
-    phone: phone,
-    message: message,
-    pushStatus: pushStatus,
-    sendTime: sendTime,
+    phone,
+    message,
+    pushStatus,
+    sendTime,
   });
 
   const from = 'Nexmo';
@@ -36,7 +36,7 @@ router.get('/testGet', (req, res) => {
   const text = message;
 
   push.save((err, result) => {
-    if(err) {
+    if (err) {
       return res.status(500).json({
         message: '에러',
         error: err,
@@ -44,16 +44,16 @@ router.get('/testGet', (req, res) => {
     }
     return nexmo.message.sendSms(from, to, text, () => {
       SmsPush.findOneAndUpdate(
-        {_id: result.id},
-        {$set: {"pushStatus": 1}},
+        { _id: result.id },
+        { $set: { pushStatus: 1 } },
         (err) => {
-          if(err) {
-            return res.status(500).json({message: 'smsPush 수정오류'});
+          if (err) {
+            return res.status(500).json({ message: 'smsPush 수정오류' });
           }
         }
       );
-      return res.json({data:'success'});
-    })
-  })
+      return res.json({ data:'success' });
+    });
+  });
 });
 export default router;

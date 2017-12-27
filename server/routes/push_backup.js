@@ -4,7 +4,7 @@ import Nexmo from 'nexmo';
 import configure from '../configure';
 import {
   PushModel,
-} from '../models'
+} from '../models';
 
 const router = express.Router();
 
@@ -21,15 +21,15 @@ router.post('/', (req, res) => {
   const message = req.body.data.message;
   const pushStatus = req.body.data.pushStatus;
   const phone = req.body.data.phone;
-  const text2 = phone.substring(1,phone.length);
+  const text2 = phone.substring(1, phone.length);
   const text1 = '82';
   const to = text1.concat(text2);
   const from = 'Mamre';
-   const push = new PushModel({
-    endpoint: endpoint,
-    keys: keys,
-    message: message,
-    pushStatus: pushStatus,
+  const push = new PushModel({
+    endpoint,
+    keys,
+    message,
+    pushStatus,
     webPushStatus: 0,
     sendTime: new Date(),
   });
@@ -40,25 +40,25 @@ router.post('/', (req, res) => {
         error: err,
       });
     }
-    if (keys!== undefined){
+    if (keys !== undefined) {
       return web_push.sendNotification({
-        endpoint: endpoint,
+        endpoint,
         TTL: 0,
         keys: {
           auth: keys.authSecret,
           p256dh: keys.key,
         },
       }, JSON.stringify({
-        message: message,
+        message,
         id: result._id,
       }))
         .then(() => {
           PushModel.findOneAndUpdate(
-            {_id: result.id},
-            { $set: {"webPushStatus": 2, "pushStatus": 2}},
+            { _id: result.id },
+            { $set: { webPushStatus: 2, pushStatus: 2 } },
             (err) => {
-              if(err) {
-                return res.status(500).json({message: 'push 수정오류'});
+              if (err) {
+                return res.status(500).json({ message: 'push 수정오류' });
               }
             }
           );
@@ -66,54 +66,53 @@ router.post('/', (req, res) => {
         })
         .catch((error) => {
           PushModel.findOneAndUpdate(
-            {_id: result.id},
-            { $set: {"webPushStatus" : 3}},
+            { _id: result.id },
+            { $set: { webPushStatus : 3 } },
             (err) => {
-              if(err) {
-                return res.status(500).json({message: 'push 수정오류'});
+              if (err) {
+                return res.status(500).json({ message: 'push 수정오류' });
               }
             }
           );
           console.log(error);
-          return nexmo.message.sendSms(from, to,result.message,{type: 'unicode'}, (err, info) => {
+          return nexmo.message.sendSms(from, to, result.message, { type: 'unicode' }, (err, info) => {
             console.log(info);
             PushModel.findOneAndUpdate(
-              {_id: result.id},
-              {$set: {"pushStatus": 2,"smsPushStatus":2}},
+              { _id: result.id },
+              { $set: { pushStatus: 2, smsPushStatus:2 } },
               (err) => {
-                if(err) {
-                  return res.status(500).json({message: 'PushModel 수정오류'});
+                if (err) {
+                  return res.status(500).json({ message: 'PushModel 수정오류' });
                 }
               }
             );
-            return res.json({data:'success'});
+            return res.json({ data:'success' });
           });
         });
-    } else {
-      return nexmo.message.sendSms(from, to,result.message,{type:'unicode'}, (err, info) => {
-        console.log(info);
-        PushModel.findOneAndUpdate(
-          {_id: result.id},
-          {$set: {"pushStatus": 2,"smsPushStatus":2}},
-          (err) => {
-            if(err) {
-              return res.status(500).json({message: 'PushModel 수정오류'});
-            }
-          }
-        );
-        return res.json({data:'success'});
-      })
     }
+    return nexmo.message.sendSms(from, to, result.message, { type:'unicode' }, (err, info) => {
+      console.log(info);
+      PushModel.findOneAndUpdate(
+        { _id: result.id },
+        { $set: { pushStatus: 2, smsPushStatus:2 } },
+        (err) => {
+          if (err) {
+            return res.status(500).json({ message: 'PushModel 수정오류' });
+          }
+        }
+      );
+      return res.json({ data:'success' });
+    });
   });
 });
 
 router.get('/:_id', (req, res) => {
   PushModel.findOneAndUpdate(
-    {_id: req.params._id},
-    { $set: {"pushStatus" : 2}},
+    { _id: req.params._id },
+    { $set: { pushStatus : 2 } },
     (err) => {
-      if(err) {
-        return res.status(500).json({message: 'push 수정오류'});
+      if (err) {
+        return res.status(500).json({ message: 'push 수정오류' });
       }
     }
   );
